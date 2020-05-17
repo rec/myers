@@ -1,14 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
-Myers diff of two lists
+Myers diff of two lists or files
 
 Inspired by
 https://gist.github.com/adamnew123456/37923cf53f51d6b9af32a539cdfa7cc4
 """
+import argparse
+
 KEEP, INSERT, REMOVE, OMIT = range(4)
 
 __version__ = '0.9.0'
-__all__ = ('myers',)
+__all__ = ('diff',)
 
 _DEFAULT_FORMATS = {
     KEEP: ' %s',
@@ -16,6 +18,22 @@ _DEFAULT_FORMATS = {
     REMOVE: '-%s',
     OMIT: '(...%s removed...)',
 }
+
+
+def diff(a, b, context=None, format=False):
+    diff = _myers(a, b)
+
+    if context is not None:
+        diff = list(_compact(diff, context))
+
+    if format:
+        fmt = dict(_DEFAULT_FORMATS)
+        if format is not True:
+            fmt.update(format)
+
+        diff = [(fmt[d] % e).rstrip() for d, e in diff]
+
+    return diff
 
 
 def _myers(a, b):
@@ -56,39 +74,57 @@ def _myers(a, b):
 
 def _compact(diff, context):
     queue = []
+    results = []
 
     def omit():
         omitted = len(queue) - context
         if omitted > 0:
-            yield OMIT, str(omitted)
+            results.append((OMIT, str(omitted)))
 
     for line in diff:
         if line[0] is KEEP:
             queue.append(line)
         else:
             if queue:
-                yield from omit()
+                omit()
                 if context > 0:
-                    yield from queue[-context:]
+                    results.extend(queue[-context:])
                 queue.clear()
-            yield line
+            results.append(line)
 
     if queue:
-        yield from queue[:context]
-        yield from omit()
+        results.extend(queue[:context])
+        omit()
+
+    return results
 
 
-def myers(a, b, context=None, format=False):
-    diff = _myers(a, b)
+def _parse_args(args=None):
+    p = argparse.ArgumentParser(description=_DESCRIPTION)
 
-    if context is not None:
-        diff = list(_compact(diff, context))
+    p.add_argument('file_a', help=_FILE_A_HELP)
+    p.add_argument('file_b', help=_FILE_B_HELP)
+    p.add_argument('--context', '-c', default=None, help=_CONTEXT_HELP)
 
-    if format:
-        fmt = dict(_DEFAULT_FORMATS)
-        if format is not True:
-            fmt.update(format)
+    return p.parse_args(args)
 
-        diff = [(fmt[d] % e).rstrip() for d, e in diff]
 
-    return diff
+_DESCRIPTION = 'Print a Myers diff between two text files'
+
+_CONTEXT_HELP = """If set, print only this many lines of context around
+each actual diff.  If not set, print the entire diff, which includes the full
+text of both files."""
+
+_FILE_A_HELP = """File A - the file to be compared from"""
+_FILE_B_HELP = """File B - the file to be compared to"""
+
+
+def _main(args=None, format=True):
+    args = _parse_args(args)
+    with open(args.file_a) as a, open(args.file_b) as b:
+        for line in diff(list(a), list(b), args.context, format):
+            print(line)
+
+
+if __name__ == '__main__':
+    _main()
