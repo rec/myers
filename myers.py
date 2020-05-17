@@ -1,14 +1,24 @@
 #!/usr/bin/env python3
 """
 Myers diff of two lists
-From https://gist.github.com/adamnew123456/37923cf53f51d6b9af32a539cdfa7cc4
+
+Inspired by
+https://gist.github.com/adamnew123456/37923cf53f51d6b9af32a539cdfa7cc4
 """
-import itertools
+KEEP, INSERT, REMOVE, OMIT = range(4)
 
-KEEP, INSERT, REMOVE, OMIT = ' +-o'
+__version__ = '0.9.0'
+__all__ = ('myers',)
+
+_DEFAULT_FORMATS = {
+    KEEP: ' %s',
+    INSERT: '+%s',
+    REMOVE: '-%s',
+    OMIT: '(...%s removed...)',
+}
 
 
-def myers(a, b):
+def _myers(a, b):
     front = {1: (0, [])}
 
     for d in range(0, len(a) + len(b) + 1):
@@ -21,9 +31,9 @@ def myers(a, b):
             else:
                 old_x, history = front[k - 1]
                 x = old_x + 1
+            y = x - k
 
             history = history[:]
-            y = x - k
 
             if 1 <= y <= len(b) and go_down:
                 history.append((INSERT, b[y - 1]))
@@ -37,56 +47,48 @@ def myers(a, b):
 
             if x >= len(a) and y >= len(b):
                 return history
-            front[k] = (x, history)
 
-    raise ValueError('Could not find edit script')
+            front[k] = x, history
+
+    # TODO: is this possible to reach?
+    raise ValueError('Unable to compute diff')
 
 
-def compact(diff, frame):
-    stack = []
-    result = []
-    last_edit = -frame
+def _compact(diff, context):
+    queue = []
 
-    for d in diff:
-        action, line = d
-        if action is KEEP:
-            if len(result) - last_edit < frame:
-                result.append(d)
-            else:
-                stack.append(d)
+    def omit():
+        omitted = len(queue) - context
+        if omitted > 0:
+            yield OMIT, str(omitted)
+
+    for line in diff:
+        if line[0] is KEEP:
+            queue.append(line)
         else:
-            if stack:
-                result.extend(stack[-frame:])
-                stack.clear()
-            result.append(d)
-            last_edit = len(result)
+            if queue:
+                yield from omit()
+                if context > 0:
+                    yield from queue[-context:]
+                queue.clear()
+            yield line
 
-    return result
+    if queue:
+        yield from queue[:context]
+        yield from omit()
 
 
-def short_diff(a, b, frame):
-    diff = myers(a, b)
+def myers(a, b, context=None, format=False):
+    diff = _myers(a, b)
 
-    def keepers(items):
-        return list(itertools.takewhile((lambda a: a[0] is KEEP), items))
+    if context is not None:
+        diff = list(_compact(diff, context))
 
-    prefix = keepers(diff)
-    suffix = list(reversed(keepers(reversed(diff))))
-    if len(prefix) + len(suffix) >= len(diff):
-        return []
+    if format:
+        fmt = dict(_DEFAULT_FORMATS)
+        if format is not True:
+            fmt.update(format)
 
-    begin = max(0, len(prefix) - frame)
-    end = len(diff) - len(suffix) + frame
+        diff = [(fmt[d] % e).rstrip() for d, e in diff]
 
-    lines = [(a + b).rstrip() for (a, b) in diff[begin:end]]
-
-    def msg(n):
-        return '[...%d line%s skipped...]' % (n, '' if n == 1 else 's')
-
-    if begin > 0:
-        lines.insert(0, msg(begin))
-    e = len(suffix) - frame
-    if e > 0:
-        lines.append(msg(e))
-
-    return lines
+    return diff

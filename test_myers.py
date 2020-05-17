@@ -2,22 +2,30 @@ from unittest import TestCase
 import myers
 
 
-def diff(a, b):
-    diff = myers.myers(a, b)
-    return [(a + b).rstrip() for (a, b) in diff]
-
-
 class TestDiff(TestCase):
     def test_diff(self):
-        actual = diff(INPUT.splitlines(), OUTPUT.splitlines())
-        expected = DIFF.splitlines()
-        assert actual == expected
+        actual = myers.myers(INPUT, OUTPUT, format=True)
+        assert actual == DIFF
 
-    def DONT_test_short_diff(self):
-        actual = diff(INPUT.splitlines(), OUTPUT.splitlines(), 3)
-        expected = SHORT_DIFF.splitlines()
+    def test_compact0(self):
+        actual = myers.myers(INPUT, OUTPUT, context=0, format=True)
+        assert actual == DIFF_COMPACT_0
+
+    def test_compact1(self):
+        actual = myers.myers(INPUT, OUTPUT, context=1, format=True)
+        print('-' * 80)
         print(*actual, sep='\n')
-        assert actual == expected
+        print('-' * 80)
+
+        assert actual == DIFF_COMPACT_1
+
+    def test_compact3(self):
+        actual = myers.myers(INPUT, OUTPUT, context=3, format=True)
+        print('-' * 80)
+        print(*actual, sep='\n')
+        print('-' * 80)
+
+        assert actual == DIFF_COMPACT_3
 
 
 INPUT = """\
@@ -34,7 +42,7 @@ import foo.bar
 # comment goes BELOW
 
 END = 'here'
-"""
+""".splitlines()
 
 OUTPUT = """\
 # something
@@ -50,7 +58,7 @@ import foo.bar
 # comment goes BELOW
 
 END = 'here'
-"""
+""".splitlines()
 
 DIFF = """\
  # something
@@ -68,21 +76,36 @@ DIFF = """\
  # comment goes BELOW
 
  END = 'here'
-"""
+""".splitlines()
 
-SHORT_DIFF = """\
- # something
- # something else
+DIFF_COMPACT_0 = """\
+(...3 removed...)
+-from a import b
+-import foo
+(...2 removed...)
++from a import b
+(...1 removed...)
++import foo
+(...5 removed...)
+""".splitlines()
+
+DIFF_COMPACT_1 = """\
+(...2 removed...)
 
 -from a import b
 -import foo
- # comment goes ABOVE
+(...1 removed...)
 
 +from a import b
  from d import f
 +import foo
  import foo.bar
+(...4 removed...)
+""".splitlines()
 
- # comment goes BELOW
-[...2 lines skipped...]
-"""
+DIFF_COMPACT_3 = (
+    DIFF[:-2]
+    + """\
+(...2 removed...)
+""".splitlines()
+)
