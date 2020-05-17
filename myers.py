@@ -17,7 +17,7 @@ _DEFAULT_FORMATS = {
     KEEP: ' %s',
     INSERT: '+%s',
     REMOVE: '-%s',
-    OMIT: '(...%s removed...)',
+    OMIT: '(...%s skipped...)',
 }
 
 

@@ -112,33 +112,33 @@ DIFF = """\
 """.splitlines()
 
 DIFF_COMPACT_0 = """\
-(...3 removed...)
+(...3 skipped...)
 -from a import b
 -import foo
-(...2 removed...)
+(...2 skipped...)
 +from a import b
-(...1 removed...)
+(...1 skipped...)
 +import foo
-(...5 removed...)
+(...5 skipped...)
 """.splitlines()
 
 DIFF_COMPACT_1 = """\
-(...2 removed...)
+(...2 skipped...)
 
 -from a import b
 -import foo
-(...1 removed...)
+(...1 skipped...)
 
 +from a import b
  from d import f
 +import foo
  import foo.bar
-(...4 removed...)
+(...4 skipped...)
 """.splitlines()
 
 DIFF_COMPACT_3 = (
     DIFF[:-2]
     + """\
-(...2 removed...)
+(...2 skipped...)
 """.splitlines()
 )
