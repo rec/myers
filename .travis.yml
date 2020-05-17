@@ -1,0 +1,20 @@
+language: python
+
+python:
+- '3.4'
+
+matrix:
+  include:
+    - python: 3.8-dev
+      dist: xenial
+
+install:
+  - pip install -r requirements.txt
+  - pip install -r test_requirements.txt
+
+script:
+  - flake8
+  - coverage run -m unittest discover
+
+after_success:
+- bash <(curl -s https://codecov.io/bash)
