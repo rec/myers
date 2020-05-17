@@ -8,7 +8,7 @@ https://gist.github.com/adamnew123456/37923cf53f51d6b9af32a539cdfa7cc4
 from __future__ import print_function
 import argparse
 
-KEEP, INSERT, REMOVE, OMIT = range(4)
+KEEP, INSERT, REMOVE, OMIT = 'kiro'
 
 __version__ = '0.9.0'
 __all__ = ('diff',)
@@ -23,7 +23,11 @@ _DEFAULT_FORMATS = {
 
 def diff(a, b, context=None, format=None):
     """
-    Return the Myers diff of two lists
+    Return the Myers diff of two lists.
+
+    The result is a list of (action, line) pairs,
+    where ``action`` is one of ``'kiro'``, for keep,
+    insert, remove, or omit.
 
     ARGUMENTS:
        a, b:
