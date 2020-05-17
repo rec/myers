@@ -5,6 +5,7 @@ Myers diff of two lists or files
 Inspired by
 https://gist.github.com/adamnew123456/37923cf53f51d6b9af32a539cdfa7cc4
 """
+from __future__ import print_function
 import argparse
 
 KEEP, INSERT, REMOVE, OMIT = range(4)
@@ -20,7 +21,23 @@ _DEFAULT_FORMATS = {
 }
 
 
-def diff(a, b, context=None, format=False):
+def diff(a, b, context=None, format=None):
+    """
+    Return the Myers diff of two lists
+
+    ARGUMENTS:
+       a, b:
+         The two files to compare
+
+       context:
+         How many lines of context to keep between blocks of changes?
+         ``None``, the default, means keep all unchanged lines.
+         ``0`` means throw away all the unchanged lines
+
+       format: if non-empty, this format dictionary is used to format
+         each diff entry
+
+    """
     diff = _myers(a, b)
 
     if context is not None:
@@ -89,7 +106,7 @@ def _compact(diff, context):
                 omit()
                 if context > 0:
                     results.extend(queue[-context:])
-                queue.clear()
+                queue[:] = []
             results.append(line)
 
     if queue:
@@ -119,7 +136,7 @@ _FILE_A_HELP = """File A - the file to be compared from"""
 _FILE_B_HELP = """File B - the file to be compared to"""
 
 
-def _main(args=None, format=True):
+def _main(args=None, format=True, print=print):
     args = _parse_args(args)
     with open(args.file_a) as a, open(args.file_b) as b:
         for line in diff(list(a), list(b), args.context, format):

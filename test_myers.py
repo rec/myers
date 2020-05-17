@@ -1,7 +1,8 @@
-from unittest import mock, TestCase
+from __future__ import print_function
+from tempfile import NamedTemporaryFile
+from unittest import TestCase
 import functools
 import myers
-from tempfile import NamedTemporaryFile
 
 diff = functools.partial(myers.diff, format=True)
 
@@ -49,19 +50,13 @@ class TestDiff(TestCase):
         assert actual == expected
 
     def test_main(self):
-        with mock.patch('builtins.print') as _print:
-            with NamedTemporaryFile('w+') as a, NamedTemporaryFile('w+') as b:
-                a.writelines(i + '\n' for i in FILE_A)
-                b.writelines(i + '\n' for i in FILE_B)
-                a.flush()
-                b.flush()
-                myers._main([a.name, b.name])
-
         results = []
-        for args, kwargs in _print.call_args_list:
-            assert not kwargs, str(kwargs)
-            assert len(args) == 1, str(args)
-            results.append(args[0])
+        with NamedTemporaryFile('w+') as a, NamedTemporaryFile('w+') as b:
+            a.writelines(i + '\n' for i in FILE_A)
+            b.writelines(i + '\n' for i in FILE_B)
+            a.flush()
+            b.flush()
+            myers._main([a.name, b.name], print=results.append)
 
         assert results == DIFF
 

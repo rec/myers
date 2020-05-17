@@ -1,5 +1,5 @@
 from setuptools import setup
-import safer
+import myers
 
 _classifiers = [
     'Development Status :: 4 - Beta',
@@ -17,17 +17,16 @@ _classifiers = [
 
 if __name__ == '__main__':
     setup(
-        name='safer',
-        version=safer.__version__,
+        name='myers',
+        version=myers.__version__,
         author='Tom Ritchford',
         author_email='tom@swirly.com',
-        url='https://github.com/rec/safer',
-        tests_require=['pytest'],
-        py_modules=['safer'],
-        description='A safer file opener',
+        url='https://github.com/rec/myers',
+        py_modules=['myers'],
+        description='Compute the Myers diff of two lists',
         long_description=open('README.rst').read(),
         license='MIT',
         classifiers=_classifiers,
         keywords=['testing', 'modules'],
-        scripts=['safer.py'],
+        scripts=['myers.py'],
     )
