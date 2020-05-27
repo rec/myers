@@ -38,8 +38,9 @@ def diff(a, b, context=None, format=None):
          ``None``, the default, means keep all unchanged lines.
          ``0`` means throw away all the unchanged lines
 
-       format: if non-empty, this format dictionary is used to format
-         each diff entry
+       format: if a dictionary, it is used to format
+         each diff entry.  If true, the default dictionary above is
+         used to format the diff entries.  Otherwise they are returned as-is.
 
     """
     diff = _myers(a, b)
