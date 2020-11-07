@@ -11,7 +11,7 @@ import argparse
 
 KEEP, INSERT, REMOVE, OMIT = 'kiro'
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __all__ = ('diff',)
 
 _DEFAULT_FORMATS = {
